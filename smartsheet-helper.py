@@ -14,7 +14,7 @@ class csc_smartsheet:
         self.sheet = os.getenv("SMARTSHEET_SHEET_ID")
         self.smart = smartsheet.Smartsheet()
         self.smart.errors_as_exceptions(True)
-        self.data = None
+        self.data = smartsheet.models.Sheet()
         self.columns = {}
         self.contact_columns={}
         self.last_timestamp = None
@@ -22,9 +22,8 @@ class csc_smartsheet:
 
     def loadColumns(self):
         self.columns = {}
-        data = self.smart.Sheets.get_columns(self.sheet)
-        print(data)
-        for a in data.data:
+        self.data.columns = self.smart.Sheets.get_columns(self.sheet).data
+        for a in self.data.columns:
             self.columns[a.title] = a.id
         
     def get_copy(self):
@@ -139,3 +138,12 @@ class csc_smartsheet:
             if(a.column_id == self.columns[key]):
                 return a
         return None
+
+    def find_first_row(self, column, value):
+        for a in self.data.rows:
+            if(self.getCell(a,column).value == value):
+                return a
+        return None
+    
+    def attachment_to_row(self,row_id, file_data, name):
+        return self.smart.Attachments.attach_file_to_row(self.sheet, row_id, (name, file_data))
