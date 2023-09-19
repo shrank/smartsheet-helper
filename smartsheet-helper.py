@@ -88,7 +88,7 @@ class csc_smartsheet:
 
     def update(self, row, values, diff=False):
         self.addUpdate(row, values, diff)
-        self.commitUpdate()
+        return self.commitUpdate()
 
     def addUpdate(self, row, values, diff=False):
         new_row = self.dict2row(values, row, diff)
@@ -100,8 +100,9 @@ class csc_smartsheet:
             rows=[]
             for a in self.updateRows:
                 rows.append(self.updateRows[a])
-            self.smart.Sheets.update_rows(self.sheet, rows)
-        self.updateRows={}
+            res = self.smart.Sheets.update_rows(self.sheet, rows)
+            self.updateRows={}
+            return res
 
     def addContact(self, column, value):
         if(column not in self.contact_columns):
@@ -115,13 +116,13 @@ class csc_smartsheet:
     def insert(self, values):
         new_row = self.dict2row(values)
         new_row.to_top = True
-        self.smart.Sheets.add_rows(self.sheet, [new_row])
+        return self.smart.Sheets.add_rows(self.sheet, [new_row])
 
     def insert_bulk(self, rows):
         res = []
         for values in rows:
           a = self.dict2row(values)
-          a.to_bottom = True
+          a.to_top = True
           res.append(a)
         return self.smart.Sheets.add_rows(self.sheet, res)
 
