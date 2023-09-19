@@ -9,7 +9,7 @@ def create_multivalue(values):
     res.values = values
     return res
 
-class csc_smartsheet:
+class smartsheet_helper:
     def __init__(self):
         self.sheet = os.getenv("SMARTSHEET_SHEET_ID")
         self.smart = smartsheet.Smartsheet()
