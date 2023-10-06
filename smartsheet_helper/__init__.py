@@ -147,3 +147,26 @@ class smartsheet_helper:
     
     def attachment_to_row(self,row_id, file_data, name):
         return self.smart.Attachments.attach_file_to_row(self.sheet, row_id, (name, file_data))
+    
+    def comments_to_row(self, row, comments):
+        id = None
+        for c in comments:
+            n = smartsheet.models.comment.Comment()
+            n.text = c
+
+            if(id == None):
+
+              if(len(row.discussions) > 0):
+                id = row.discussions[0].id
+              else:
+                a = self.smart.Discussions.get_row_discussions(self.sheet, row.id).data
+                if(len(a) > 0):
+                    id = a[0].id
+                else:
+                    a = self.smart.Discussions.create_discussion_on_row(self.sheet, row.id,  smartsheet.models.discussion.Discussion(props={"comment":n})).data
+                    id = a.id
+                    continue
+              if(id == None):
+                  return
+
+            self.smart.Discussions.add_comment_to_discussion(self.sheet, id, n)
