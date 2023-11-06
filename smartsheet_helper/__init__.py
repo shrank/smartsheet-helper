@@ -194,8 +194,6 @@ class smartsheet_helper:
         if(res.enabled != enabled):
             self.smart.Webhooks.update_webhook(res.id_, smartsheet.models.webhook.Webhook(props={"enabled": enabled}))
 
-        
-
     def delete_webhook(self, name):
         for a in self.get_webhooks(self):
             if(a.name == name):
