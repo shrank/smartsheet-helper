@@ -170,3 +170,33 @@ class smartsheet_helper:
                   return
 
             self.smart.Discussions.add_comment_to_discussion(self.sheet, id, n)
+
+    def get_webhooks(self):
+        return self.smart.Webhooks.list_webhooks().data
+
+    def create_webhook(self,name, url, columns=None, enabled=True):
+        item = smartsheet.models.webhook.Webhook()
+        item.callback_url = url
+        item.name = name
+        item.events =  '*.*'
+        item.scope = "sheet"
+        item.version = 1
+        item.scope_object_id = int(self.sheet)
+        if(columns is not None):
+            if(len(self.columns) == 0):
+                self.loadColumns()
+            subscope=[]
+            for a in columns:
+                if(a in self.columns):
+                    subscope.append(self.columns[a])
+            item.subscope = smartsheet.models.webhook_subscope.WebhookSubscope(props={"column_ids":subscope})
+        res = self.smart.Webhooks.create_webhook(item).data
+        if(res.enabled != enabled):
+            self.smart.Webhooks.update_webhook(res.id_, smartsheet.models.webhook.Webhook(props={"enabled": enabled}))
+
+        
+
+    def delete_webhook(self, name):
+        for a in self.get_webhooks(self):
+            if(a.name == name):
+                self.smart.Webhooks.delete_webhook(a.id_)
