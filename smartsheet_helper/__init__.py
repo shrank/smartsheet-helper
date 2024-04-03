@@ -38,10 +38,14 @@ class smartsheet_helper:
         self.data = self.smart.Sheets.get_sheet(self.sheet)
         self.last_timestamp = datetime.utcnow().isoformat()
         print(self.last_timestamp)
+        columns = {}
+        contact_columns = {}
         for a in self.data.columns:
-            self.columns[a.title] = a.id
+            columns[a.title] = a.id
             if(a.type == "CONTACT_LIST"):
-                self.contact_columns[a.title] = {"type": "CONTACT_LIST", "contactOptions": [] }
+                contact_columns[a.title] = {"type": "CONTACT_LIST", "contactOptions": [] }
+        self.columns = columns
+        self.contact_columns = contact_columns
         return self.data.rows
 
     def getUpdated(self):
