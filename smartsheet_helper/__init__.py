@@ -4,6 +4,15 @@ import os
 import copy
 from datetime import datetime
 
+class _row_dummy():
+    def __init__(self):
+        self.id = -1
+def row_dummy(id):
+    a = _row_dummy()
+    a.id = id
+    return a
+
+print("JJJ")
 def create_multivalue(values):
     res = smartsheet.models.MultiPicklistObjectValue()
     res.values = values
@@ -21,10 +30,16 @@ class smartsheet_helper:
         self.updateRows={}
 
     def loadColumns(self):
-        self.columns = {}
         self.data.columns = self.smart.Sheets.get_columns(self.sheet).data
+        self._loadColumns()
+
+    def _loadColumns(self):
+        self.columns = {}
+        contact_columns = {}
         for a in self.data.columns:
             self.columns[a.title] = a.id
+            if(a.type == "CONTACT_LIST"):
+                self.contact_columns[a.title] = {"type": "CONTACT_LIST", "contactOptions": [] }
         
     def get_copy(self):
         data = copy.copy(self)
@@ -34,18 +49,19 @@ class smartsheet_helper:
         data.updateRows={}
         return data
 
-    def getAll(self):
-        self.data = self.smart.Sheets.get_sheet(self.sheet)
+    def getAll(self, columns=None):
+        if(columns is None):
+            self.data = self.smart.Sheets.get_sheet(self.sheet)
+            self._loadColumns()
+        else:
+            if(len(self.columns)==0):
+                self.loadColumns()
+            f = []
+            for a in columns:
+                f.append(self.columns[a])
+            self.data = self.smart.Sheets.get_sheet(self.sheet,column_ids=f)
         self.last_timestamp = datetime.utcnow().isoformat()
         print(self.last_timestamp)
-        columns = {}
-        contact_columns = {}
-        for a in self.data.columns:
-            columns[a.title] = a.id
-            if(a.type == "CONTACT_LIST"):
-                contact_columns[a.title] = {"type": "CONTACT_LIST", "contactOptions": [] }
-        self.columns = columns
-        self.contact_columns = contact_columns
         return self.data.rows
 
     def getUpdated(self):
@@ -120,7 +136,7 @@ class smartsheet_helper:
         new_row = self.dict2row(values)
         new_row.to_top = True
         return self.smart.Sheets.add_rows(self.sheet, [new_row])
-
+    
     def insert_bulk(self, rows):
         res = []
         for values in rows:
