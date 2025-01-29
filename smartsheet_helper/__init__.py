@@ -12,7 +12,6 @@ def row_dummy(id):
     a.id = id
     return a
 
-print("JJJ")
 def create_multivalue(values):
     res = smartsheet.models.MultiPicklistObjectValue()
     res.values = values
