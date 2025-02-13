@@ -65,7 +65,7 @@ class smartsheet_helper:
 
     def getUpdated(self, columns=None):
         if(self.last_timestamp is None):
-            return self.getAll()
+            return self.getAll(columns)
         if(columns is None):
             self.data = self.smart.Sheets.get_sheet(self.sheet, rows_modified_since=self.last_timestamp)
             self._loadColumns()
