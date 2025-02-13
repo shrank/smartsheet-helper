@@ -2,7 +2,7 @@
 import smartsheet
 import os
 import copy
-from datetime import datetime
+from datetime import datetime, UTC
 
 class _row_dummy():
     def __init__(self):
@@ -59,17 +59,24 @@ class smartsheet_helper:
             for a in columns:
                 f.append(self.columns[a])
             self.data = self.smart.Sheets.get_sheet(self.sheet,column_ids=f)
-        self.last_timestamp = datetime.utcnow().isoformat()
+        self.last_timestamp = datetime.now(UTC).isoformat()
         print(self.last_timestamp)
         return self.data.rows
 
-    def getUpdated(self):
+    def getUpdated(self, columns=None):
         if(self.last_timestamp is None):
             return self.getAll()
-        self.data = self.smart.Sheets.get_sheet(self.sheet, rows_modified_since=self.last_timestamp)
-        self.last_timestamp=datetime.utcnow().isoformat()
-        for a in self.data.columns:
-            self.columns[a.title] = a.id
+        if(columns is None):
+            self.data = self.smart.Sheets.get_sheet(self.sheet, rows_modified_since=self.last_timestamp)
+            self._loadColumns()
+        else:
+            if(len(self.columns)==0):
+                self.loadColumns()
+            f = []
+            for a in columns:
+                f.append(self.columns[a])
+            self.data = self.smart.Sheets.get_sheet(self.sheet,column_ids=f, rows_modified_since=self.last_timestamp)
+        self.last_timestamp = datetime.now(UTC).isoformat()
         return self.data.rows
 
     def dict2row(self,values, row=None, diff=False, skip_nonexistend=True):
